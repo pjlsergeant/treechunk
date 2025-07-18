@@ -1,0 +1,156 @@
+import { readFileSync, writeFileSync } from 'fs';
+import { marked } from 'marked';
+import { parseMarkdown, DocumentNode } from '../src/markdownParser';
+import { TreeChunker } from '../src/chunk';
+import { OpenAISummarizer } from '../src/summarizer/openai';
+
+interface ChunkMapping {
+  chunk: string;
+  sourceContent: string;
+}
+
+// Extract the source content that corresponds to a chunk
+function getSourceContent(node: DocumentNode): string {
+  const parts: string[] = [];
+
+  // Add the title
+  if (node.title) {
+    const depth = node.depth || 1;
+    parts.push('#'.repeat(depth) + ' ' + node.title);
+  }
+
+  // Add text content
+  const textContent = node.children.filter((child) => typeof child === 'string').join('\n\n');
+
+  if (textContent) {
+    parts.push(textContent);
+  }
+
+  return parts.join('\n\n');
+}
+
+// Collect source content in depth-first order
+function collectSourceContent(node: DocumentNode, sources: string[] = []): string[] {
+  sources.push(getSourceContent(node));
+
+  const childNodes = node.children.filter(
+    (child): child is DocumentNode => typeof child !== 'string',
+  );
+
+  for (const child of childNodes) {
+    collectSourceContent(child, sources);
+  }
+
+  return sources;
+}
+
+// Collect chunks and map them to source content
+async function collectChunkMappings(
+  chunker: TreeChunker,
+  node: DocumentNode,
+): Promise<ChunkMapping[]> {
+  // Collect all source content in depth-first order
+  const sourceContents = collectSourceContent(node);
+
+  // Collect chunks in the same order
+  const chunks: string[] = [];
+  await chunker.makeChunks(node, async (chunk) => {
+    chunks.push(chunk);
+  });
+
+  // Map chunks to source content
+  const mappings: ChunkMapping[] = [];
+  for (let i = 0; i < chunks.length && i < sourceContents.length; i++) {
+    mappings.push({
+      chunk: chunks[i]!,
+      sourceContent: sourceContents[i]!,
+    });
+  }
+
+  return mappings;
+}
+
+function generateHTML(filename: string, mappings: ChunkMapping[]): string {
+  const rows = mappings
+    .map(
+      (mapping, index) => `
+    <tr>
+      <td>
+        <div class="chunk-num">Source ${index + 1}</div>
+        ${marked(mapping.sourceContent)}
+      </td>
+      <td>
+        <div class="chunk-num">Chunk ${index + 1}</div>
+        ${marked(mapping.chunk)}
+      </td>
+    </tr>
+  `,
+    )
+    .join('\n');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>TreeChunk Demo: ${filename}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 15px; vertical-align: top; }
+    th { background: #f5f5f5; font-weight: bold; }
+    td { width: 50%; }
+    .chunk-num { color: #666; font-size: 0.9em; margin-bottom: 10px; }
+    pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    blockquote { border-left: 3px solid #ddd; padding-left: 10px; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>TreeChunk Demo: ${filename}</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Source Content</th>
+        <th>Generated Chunk</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+  </table>
+</body>
+</html>`;
+}
+
+async function main() {
+  const filename = process.argv[2];
+  if (!filename) {
+    console.error('Usage: npm run chunk <markdown-file>');
+    process.exit(1);
+  }
+
+  try {
+    const input = readFileSync(filename, 'utf8');
+    const node = parseMarkdown(input);
+
+    const summarizer = new OpenAISummarizer(
+      'The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don\'t mention "online crime game".',
+    );
+    const chunker = new TreeChunker(summarizer);
+
+    console.log('Generating chunks...');
+    const mappings = await collectChunkMappings(chunker, node);
+
+    const html = generateHTML(filename, mappings);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const outputPath = `/tmp/treechunk-demo-${timestamp}.html`;
+
+    writeFileSync(outputPath, html);
+    console.log(`Demo saved to: ${outputPath}`);
+  } catch (error) {
+    console.error('Error:', error);
+    process.exit(1);
+  }
+}
+
+main();

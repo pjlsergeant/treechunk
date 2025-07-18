@@ -1,5 +1,5 @@
 
 set dotenv-load
 
-chunk FILE:
-    tsx bin/chunk.ts {{FILE}}
+demo FILE:
+    tsx bin/demo.ts {{FILE}}
