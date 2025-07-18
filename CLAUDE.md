@@ -5,6 +5,8 @@
 - **Direct testing over mocking**: Test actual logic, not side effects (e.g., the testable subclass pattern)
 - **Minimal but effective**: Don't over-test (like testing regex engines or every whitespace variation)
 - **Debug properly**: Print full output when debugging test failures, don't make assumptions
+- **Tests use .spec.ts**: Convention for TypeScript test file naming
+- **Simplify test assertions**: Don't write tests that dig into individual data structures with complex assertions; prefer to simplify the output and test it all at once
 
 ## Code Design
 - **Simple and direct**: When given options, prefer the simplest approach

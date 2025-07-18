@@ -26,8 +26,9 @@ import { OpenAISummarizer } from 'treechunk/summarizer/openai';
 const summarizer = new OpenAISummarizer('Technical documentation context');
 const chunker = new TreeChunker(summarizer);
 
-await chunker.makeChunks(documentNode, async (chunk) => {
-  console.log(chunk);
+await chunker.makeChunks(documentNode, async (chunk, source) => {
+  console.log(chunk); // The enriched chunk with context
+  console.log(source); // The original markdown source for this section
 });
 ```
 
@@ -36,6 +37,9 @@ await chunker.makeChunks(documentNode, async (chunk) => {
 ### TreeChunker
 - `new TreeChunker(summarizer)` - Create chunker with a summarizer
 - `makeChunks(node, onChunk, stack?)` - Process document, calling onChunk for each chunk
+  - `onChunk: (chunk: string, source: string) => Promise<void>` - Callback receives:
+    - `chunk`: The enriched chunk with hierarchical title and AI-generated context
+    - `source`: The original markdown source for this section
 
 ### Summarizers
 - `new OpenAISummarizer(context?, apiKey?)` - OpenAI implementation

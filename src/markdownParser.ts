@@ -9,7 +9,7 @@ export type DocumentNode = {
 
 export type DocumentNodeOrText = DocumentNode | string;
 
-export function renderDocument(node: DocumentNodeOrText): string {
+export function renderDocument(node: DocumentNodeOrText, stringChildrenOnly = false): string {
   if (typeof node === 'string') return node;
   let title: string;
 
@@ -19,7 +19,11 @@ export function renderDocument(node: DocumentNodeOrText): string {
     title = `\n\n${'#'.repeat(node.depth || 1)} ${node.title}`;
   }
 
-  return title + '\n\n' + node.children.map((o) => renderDocument(o)).join('\n\n');
+  const children = stringChildrenOnly
+    ? node.children.filter((c) => typeof c === 'string')
+    : node.children;
+
+  return title + '\n\n' + children.map((o) => renderDocument(o, stringChildrenOnly)).join('\n\n');
 }
 
 export function parseMarkdown(markdown: string): DocumentNode {

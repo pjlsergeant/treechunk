@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { TreeChunker, MockSummarizer } from './chunk';
-import { DocumentNode } from './markdownParser';
+import { DocumentNode, parseMarkdown, renderDocument } from './markdownParser';
 
 // Helper function to simplify chunk structure for testing
 function simplifyChunk(chunk: string): [string, string[], string] {
@@ -73,7 +73,7 @@ describe('TreeChunker', () => {
       ],
     };
 
-    await chunker.makeChunks(doc, async (chunk) => {
+    await chunker.makeChunks(doc, async (chunk, _) => {
       chunks.push(chunk);
     });
 
@@ -107,7 +107,7 @@ describe('TreeChunker', () => {
       children: ['First paragraph', 'Second paragraph', 'Third paragraph'],
     };
 
-    await chunker.makeChunks(doc, async (chunk) => {
+    await chunker.makeChunks(doc, async (chunk, _) => {
       chunks.push(chunk);
     });
 
@@ -130,13 +130,50 @@ describe('TreeChunker', () => {
       children: [],
     };
 
-    await chunker.makeChunks(doc, async (chunk) => {
+    await chunker.makeChunks(doc, async (chunk, _) => {
       chunks.push(chunk);
     });
 
     const simplified = chunks.map(simplifyChunk);
 
     expect(simplified).toEqual([['null', [], '']]);
+  });
+
+  it('source content matches renderDocument output', async () => {
+    const markdown = `# Main Title
+
+Main content here.
+
+## Section One
+
+Section one content.
+
+### Subsection 1.1
+
+Subsection content.
+
+## Section Two
+
+Section two content.`;
+
+    const doc = parseMarkdown(markdown);
+    const mockSummarizer = new MockSummarizer();
+    const chunker = new TreeChunker(mockSummarizer);
+    const sources: string[] = [];
+
+    await chunker.makeChunks(doc, async (_, source) => {
+      sources.push(source);
+    });
+
+    // Each source should match what renderDocument produces for that node with stringChildrenOnly
+    const expectedSources = [
+      renderDocument(doc, true).trim(),
+      renderDocument(doc.children[1] as DocumentNode, true).trim(),
+      renderDocument((doc.children[1] as DocumentNode).children[1] as DocumentNode, true).trim(),
+      renderDocument(doc.children[2] as DocumentNode, true).trim(),
+    ];
+
+    expect(sources).toEqual(expectedSources);
   });
 
   it('needsSummary returns true only for nodes with child nodes', () => {

@@ -1,4 +1,4 @@
-import { DocumentNode } from './markdownParser';
+import { DocumentNode, renderDocument } from './markdownParser';
 import { Summarizer } from './summarizer/base';
 
 export class TreeChunker {
@@ -10,7 +10,7 @@ export class TreeChunker {
 
   async makeChunks(
     node: DocumentNode,
-    onChunk: (chunk: string) => Promise<void>,
+    onChunk: (chunk: string, source: string) => Promise<void>,
     stack: DocumentNode[] = [],
   ): Promise<void> {
     if (this.needsSummary(node)) {
@@ -31,7 +31,10 @@ export class TreeChunker {
 
     const chunk = `# ${title}\n\n${summary ? `${summary}\n\n` : ''}${textChunk}`;
 
-    await onChunk(chunk);
+    // Generate source content using renderDocument with stringChildrenOnly flag
+    const source = renderDocument(node, true).trim();
+
+    await onChunk(chunk, source);
 
     for (const childNode of node.children.filter((c) => typeof c !== 'string')) {
       await this.makeChunks(childNode, onChunk, [...stack, node]);

@@ -9,68 +9,24 @@ interface ChunkMapping {
   sourceContent: string;
 }
 
-// Extract the source content that corresponds to a chunk
-function getSourceContent(node: DocumentNode): string {
-  const parts: string[] = [];
-
-  // Add the title
-  if (node.title) {
-    const depth = node.depth || 1;
-    parts.push('#'.repeat(depth) + ' ' + node.title);
-  }
-
-  // Add text content
-  const textContent = node.children.filter((child) => typeof child === 'string').join('\n\n');
-
-  if (textContent) {
-    parts.push(textContent);
-  }
-
-  return parts.join('\n\n');
-}
-
-// Collect source content in depth-first order
-function collectSourceContent(node: DocumentNode, sources: string[] = []): string[] {
-  sources.push(getSourceContent(node));
-
-  const childNodes = node.children.filter(
-    (child): child is DocumentNode => typeof child !== 'string',
-  );
-
-  for (const child of childNodes) {
-    collectSourceContent(child, sources);
-  }
-
-  return sources;
-}
-
 // Collect chunks and map them to source content
 async function collectChunkMappings(
   chunker: TreeChunker,
   node: DocumentNode,
 ): Promise<ChunkMapping[]> {
-  // Collect all source content in depth-first order
-  const sourceContents = collectSourceContent(node);
-  console.log(`Found ${sourceContents.length} sections to process`);
-
-  // Collect chunks in the same order
-  const chunks: string[] = [];
+  const mappings: ChunkMapping[] = [];
   let chunkCount = 0;
-  await chunker.makeChunks(node, async (chunk) => {
+
+  await chunker.makeChunks(node, async (chunk, source) => {
     chunkCount++;
-    console.log(`Processing chunk ${chunkCount}/${sourceContents.length}...`);
-    chunks.push(chunk);
+    console.log(`Processing chunk ${chunkCount}...`);
+    mappings.push({
+      chunk: chunk,
+      sourceContent: source,
+    });
   });
 
-  // Map chunks to source content
-  const mappings: ChunkMapping[] = [];
-  for (let i = 0; i < chunks.length && i < sourceContents.length; i++) {
-    mappings.push({
-      chunk: chunks[i]!,
-      sourceContent: sourceContents[i]!,
-    });
-  }
-
+  console.log(`Processed ${chunkCount} chunks`);
   return mappings;
 }
 
