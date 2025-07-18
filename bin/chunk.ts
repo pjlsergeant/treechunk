@@ -8,7 +8,9 @@ async function main() {
   // console.log(renderDocument(parseMarkdown(input.toString('utf8'))));
 
   const node = parseMarkdown(input.toString('utf8'));
-  const summarizer = new OpenAISummarizer();
+  const summarizer = new OpenAISummarizer(
+    'The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don\'t mention "online crime game".',
+  );
   const chunker = new TreeChunker(summarizer);
 
   await chunker.makeChunks(node, async (chunk) => {

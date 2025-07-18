@@ -7,7 +7,7 @@ function simplifyChunk(chunk: string): [string, string[], string] {
   const lines = chunk.split('\n');
 
   // Extract title (remove # prefix)
-  const title = lines[0].replace(/^#\s+/, '');
+  const title = lines[0]?.replace(/^#\s+/, '') || '';
 
   // Extract context summaries
   const summaries: string[] = [];
@@ -16,8 +16,8 @@ function simplifyChunk(chunk: string): [string, string[], string] {
   if (lines[2]?.startsWith('> AI-generated context:')) {
     contentStartIndex = 3;
     for (let i = 3; i < lines.length; i++) {
-      if (lines[i].startsWith('> - ')) {
-        summaries.push(lines[i].substring(4)); // Remove '> - ' prefix
+      if (lines[i]?.startsWith('> - ')) {
+        summaries.push(lines[i]!.substring(4)); // Remove '> - ' prefix
       } else if (lines[i] === '') {
         contentStartIndex = i + 1;
         break;

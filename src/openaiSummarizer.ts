@@ -25,7 +25,7 @@ function buildContextSummary(stack: DocumentNode[]): string {
 export class OpenAISummarizer implements Summarizer {
   private openai: OpenAI;
 
-  constructor() {
+  constructor(private documentContext: string = '') {
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -57,8 +57,8 @@ This will be prepended to the sub-section text.`;
     // Choose the appropriate instruction paragraph based on context
     const instructionParagraph =
       stack.length === 0
-        ? `I would like you to provide two very, very short sentences; one describing the topic of the articles, and the other presenting the key facts provided in the article, that can be combined with the title to provide some context. It should be as useful as possible to provide an overall context to include with the chunk. Present these sentences together on the same line. It does not need to be detail-heavy, each section will have more detail added. You should focus on the beginning of the document: the first few paragraphs will likely provide the best source for a summary. The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don't mention "online crime game".`
-        : `I would like you to provide a very, very short sentence describing the key facts provided in this section, that can be combined with the title to provide some context. It should be as useful as possible to provide an overall context to include with the chunk. It does not need to be detail-heavy, each section will have more detail added. You should focus on the beginning of the section: the first few paragraphs will likely provide the best source for a summary. The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don't mention "online crime game". I have provided the context from running this process in the parent sections to help guide you.`;
+        ? `I would like you to provide two very, very short sentences; one describing the topic of the articles, and the other presenting the key facts provided in the article, that can be combined with the title to provide some context. It should be as useful as possible to provide an overall context to include with the chunk. Present these sentences together on the same line. It does not need to be detail-heavy, each section will have more detail added. You should focus on the beginning of the document: the first few paragraphs will likely provide the best source for a summary.${this.documentContext ? ' ' + this.documentContext : ''}`
+        : `I would like you to provide a very, very short sentence describing the key facts provided in this section, that can be combined with the title to provide some context. It should be as useful as possible to provide an overall context to include with the chunk. It does not need to be detail-heavy, each section will have more detail added. You should focus on the beginning of the section: the first few paragraphs will likely provide the best source for a summary.${this.documentContext ? ' ' + this.documentContext : ''} I have provided the context from running this process in the parent sections to help guide you.`;
 
     // Build the complete prompt
     const prompt = `${basePrompt}
