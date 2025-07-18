@@ -18,7 +18,14 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['node_modules/', 'dist/', 'coverage/', '*.min.js', 'eslint.config.js', 'vitest.config.ts'],
+    ignores: [
+      'node_modules/',
+      'dist/',
+      'coverage/',
+      '*.min.js',
+      'eslint.config.js',
+      'vitest.config.ts',
+    ],
   },
   ...compat.extends('eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'),
   {

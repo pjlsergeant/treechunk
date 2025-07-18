@@ -6,27 +6,23 @@ const openai = new OpenAI({
 });
 
 function getTextContent(node: DocumentNode): string {
-  const directText = node.children
-    .filter(c => typeof c === 'string')
-    .join('\n\n');
+  const directText = node.children.filter((c) => typeof c === 'string').join('\n\n');
 
   return directText;
 }
 
 function buildTitlePath(node: DocumentNode, stack: DocumentNode[]): string {
   return stack.length === 0
-    ? node.title ?? ''
-    : [...stack.map(s => s.title), node.title].join(' > ');
+    ? (node.title ?? '')
+    : [...stack.map((s) => s.title), node.title].join(' > ');
 }
 
 function buildContextSummary(stack: DocumentNode[]): string {
-  const summaries = stack
-    .map(s => s.summary)
-    .filter(s => s?.length);
+  const summaries = stack.map((s) => s.summary).filter((s) => s?.length);
 
   if (summaries.length === 0) return '';
 
-  return summaries.map(s => `* ${s}`).join('\n');
+  return summaries.map((s) => `* ${s}`).join('\n');
 }
 
 export async function summarize(node: DocumentNode, stack: DocumentNode[] = []): Promise<string> {
@@ -53,9 +49,10 @@ I will also provide a summary of all the text at each section.
 This will be prepended to the sub-section text.`;
 
   // Choose the appropriate instruction paragraph based on context
-  const instructionParagraph = stack.length === 0
-    ? `I would like you to provide two very, very short sentences; one describing the topic of the articles, and the other presenting the key facts provided in the article, that can be combined with the title to provide some context. It should be as useful as possible to provide an overall context to include with the chunk. Present these sentences together on the same line. It does not need to be detail-heavy, each section will have more detail added. You should focus on the beginning of the document: the first few paragraphs will likely provide the best source for a summary. The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don't mention "online crime game".`
-    : `I would like you to provide a very, very short sentence describing the key facts provided in this section, that can be combined with the title to provide some context. It should be as useful as possible to provide an overall context to include with the chunk. It does not need to be detail-heavy, each section will have more detail added. You should focus on the beginning of the section: the first few paragraphs will likely provide the best source for a summary. The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don't mention "online crime game". I have provided the context from running this process in the parent sections to help guide you.`;
+  const instructionParagraph =
+    stack.length === 0
+      ? `I would like you to provide two very, very short sentences; one describing the topic of the articles, and the other presenting the key facts provided in the article, that can be combined with the title to provide some context. It should be as useful as possible to provide an overall context to include with the chunk. Present these sentences together on the same line. It does not need to be detail-heavy, each section will have more detail added. You should focus on the beginning of the document: the first few paragraphs will likely provide the best source for a summary. The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don't mention "online crime game".`
+      : `I would like you to provide a very, very short sentence describing the key facts provided in this section, that can be combined with the title to provide some context. It should be as useful as possible to provide an overall context to include with the chunk. It does not need to be detail-heavy, each section will have more detail added. You should focus on the beginning of the section: the first few paragraphs will likely provide the best source for a summary. The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don't mention "online crime game". I have provided the context from running this process in the parent sections to help guide you.`;
 
   // Build the complete prompt
   const prompt = `${basePrompt}
@@ -64,11 +61,15 @@ ${instructionParagraph}
 
 Title: ${titlePath}
 
-${contextSummary ? `AI-generated context summary:
+${
+  contextSummary
+    ? `AI-generated context summary:
 
 ${contextSummary}
 
-` : ''}Content:
+`
+    : ''
+}Content:
 
 ${content}`;
 
@@ -78,8 +79,8 @@ ${content}`;
       messages: [
         {
           role: 'user',
-          content: prompt
-        }
+          content: prompt,
+        },
       ],
     });
 

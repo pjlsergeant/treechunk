@@ -5,21 +5,21 @@ export type DocumentNode = {
   summary: string | null;
   children: DocumentNodeOrText[];
   depth: number;
-}
+};
 
 export type DocumentNodeOrText = DocumentNode | string;
 
-export function renderDocument( node: DocumentNodeOrText ) : string {
-  if ( typeof node === 'string' ) return node;
+export function renderDocument(node: DocumentNodeOrText): string {
+  if (typeof node === 'string') return node;
   let title: string;
 
-  if ( node.depth === 0 ) {
+  if (node.depth === 0) {
     title = '# ' + node.title;
   } else {
-    title = `\n\n${'#'.repeat( node.depth || 1 )} ${node.title}`;
+    title = `\n\n${'#'.repeat(node.depth || 1)} ${node.title}`;
   }
 
-  return title + '\n\n' + node.children.map( o => renderDocument(o) ).join('\n\n');
+  return title + '\n\n' + node.children.map((o) => renderDocument(o)).join('\n\n');
 }
 
 export function parseMarkdown(markdown: string): DocumentNode {
@@ -30,7 +30,7 @@ export function parseMarkdown(markdown: string): DocumentNode {
     title: null,
     summary: null,
     children: [],
-    depth: 0
+    depth: 0,
   };
 
   const stack: DocumentNode[] = [root];
@@ -38,13 +38,12 @@ export function parseMarkdown(markdown: string): DocumentNode {
 
   for (const token of tokens) {
     if (token.type === 'heading') {
-      if (!token.depth) throw new Error("Token without depth");
+      if (!token.depth) throw new Error('Token without depth');
 
       // Special-case the first heading
       if (!root.title) {
         root.title = token.text!;
-      }
-      else {
+      } else {
         // Work out where we are
         while (true) {
           if (stack.length === 0 || stack.at(-1)!.depth < token.depth) {
@@ -52,7 +51,7 @@ export function parseMarkdown(markdown: string): DocumentNode {
               cursor = root;
               stack.push(root);
             } else {
-              cursor = stack.at(-1)!
+              cursor = stack.at(-1)!;
             }
 
             const newBlock: DocumentNode = {
