@@ -7,3 +7,4 @@ dist/
 .DS_Store
 .cache/
 tmp/
+.tool-versions
