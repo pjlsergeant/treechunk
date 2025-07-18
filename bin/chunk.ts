@@ -11,11 +11,9 @@ async function main() {
   const summarizer = new OpenAISummarizer();
   const chunker = new TreeChunker(summarizer);
 
-  await chunker.makeChunks(node, []);
-
-  // for ( const chunk of chunks ) {
-  //   console.log(`---+++---\n${chunk}`);
-  // }
+  await chunker.makeChunks(node, async (chunk) => {
+    console.log(`---+++---\n${chunk}`);
+  });
 }
 
 main();

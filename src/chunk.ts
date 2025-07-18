@@ -11,7 +11,11 @@ export class TreeChunker {
     return !!node.children.find((c) => typeof c !== 'string');
   }
 
-  async makeChunks(node: DocumentNode, stack: DocumentNode[] = []): Promise<string[]> {
+  async makeChunks(
+    node: DocumentNode,
+    onChunk: (chunk: string) => Promise<void>,
+    stack: DocumentNode[] = [],
+  ): Promise<void> {
     if (this.needsSummary(node)) {
       node.summary = await this.summarizer.summarize(node, stack);
     }
@@ -30,14 +34,11 @@ export class TreeChunker {
 
     const chunk = `# ${title}\n\n${summary ? `${summary}\n\n` : ''}${textChunk}`;
 
-    console.log(`---+++---\n${chunk}`);
+    await onChunk(chunk);
 
-    const childChunks: string[] = [];
     for (const childNode of node.children.filter((c) => typeof c !== 'string')) {
-      childChunks.push(...(await this.makeChunks(childNode, [...stack, node])));
+      await this.makeChunks(childNode, onChunk, [...stack, node]);
     }
-
-    return [chunk, ...childChunks];
   }
 }
 
