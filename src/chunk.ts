@@ -7,7 +7,7 @@ export interface Summarizer {
 export class TreeChunker {
   constructor(private summarizer: Summarizer) {}
 
-  private needsSummary(node: DocumentNode): boolean {
+  protected needsSummary(node: DocumentNode): boolean {
     return !!node.children.find((c) => typeof c !== 'string');
   }
 
