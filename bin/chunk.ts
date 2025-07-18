@@ -1,13 +1,17 @@
 import { readFileSync } from 'fs';
 import { parseMarkdown } from '../src/markdownParser';
-import { makeChunks } from '../src/chunk';
+import { TreeChunker } from '../src/chunk';
+import { OpenAISummarizer } from '../src/openaiSummarizer';
 
 async function main() {
   const input = readFileSync(process.argv[2]!);
   // console.log(renderDocument(parseMarkdown(input.toString('utf8'))));
 
   const node = parseMarkdown(input.toString('utf8'));
-  await makeChunks(node, []);
+  const summarizer = new OpenAISummarizer();
+  const chunker = new TreeChunker(summarizer);
+
+  await chunker.makeChunks(node, []);
 
   // for ( const chunk of chunks ) {
   //   console.log(`---+++---\n${chunk}`);
