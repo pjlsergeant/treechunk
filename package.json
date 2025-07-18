@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Tree-based chunking for markdown",
   "type": "module",
-  "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "vitest watch",
     "build": "tsc --noEmit",
@@ -14,8 +14,7 @@
     "prepare": "husky"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Peter Sergeant pete@sgnt.ai",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@types/node": "^24.0.3",
