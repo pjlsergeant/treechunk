@@ -4,10 +4,10 @@ import { BaseSummarizer } from './base';
 export class OpenAISummarizer extends BaseSummarizer {
   private openai: OpenAI;
 
-  constructor(documentContext: string = '') {
+  constructor(documentContext: string = '', apiKey?: string) {
     super(documentContext);
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: apiKey || process.env.OPENAI_API_KEY,
     });
   }
 
