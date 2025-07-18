@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { parseMarkdown } from '../src/markdownParser';
 import { TreeChunker } from '../src/chunk';
-import { OpenAISummarizer } from '../src/openaiSummarizer';
+import { OpenAISummarizer } from '../src/summarizer/openai';
 
 async function main() {
   const input = readFileSync(process.argv[2]!);

@@ -1,8 +1,5 @@
 import { DocumentNode } from './markdownParser';
-
-export interface Summarizer {
-  summarize(node: DocumentNode, stack: DocumentNode[]): Promise<string>;
-}
+import { Summarizer } from './summarizer/base';
 
 export class TreeChunker {
   constructor(private summarizer: Summarizer) {}
