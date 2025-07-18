@@ -51,10 +51,14 @@ async function collectChunkMappings(
 ): Promise<ChunkMapping[]> {
   // Collect all source content in depth-first order
   const sourceContents = collectSourceContent(node);
+  console.log(`Found ${sourceContents.length} sections to process`);
 
   // Collect chunks in the same order
   const chunks: string[] = [];
+  let chunkCount = 0;
   await chunker.makeChunks(node, async (chunk) => {
+    chunkCount++;
+    console.log(`Processing chunk ${chunkCount}/${sourceContents.length}...`);
     chunks.push(chunk);
   });
 
@@ -70,7 +74,7 @@ async function collectChunkMappings(
   return mappings;
 }
 
-function generateHTML(filename: string, mappings: ChunkMapping[]): string {
+function generateHTML(filename: string, mappings: ChunkMapping[], documentContext: string): string {
   const rows = mappings
     .map(
       (mapping, index) => `
@@ -96,6 +100,9 @@ function generateHTML(filename: string, mappings: ChunkMapping[]): string {
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 20px; }
     h1 { color: #333; }
+    .context-box { background: #f0f0f0; border: 1px solid #ddd; padding: 15px; margin: 20px 0; border-radius: 5px; }
+    .context-box h2 { margin-top: 0; font-size: 1.1em; }
+    .context-box p { margin: 0; font-style: italic; color: #666; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ddd; padding: 15px; vertical-align: top; }
     th { background: #f5f5f5; font-weight: bold; }
@@ -107,6 +114,10 @@ function generateHTML(filename: string, mappings: ChunkMapping[]): string {
 </head>
 <body>
   <h1>TreeChunk Demo: ${filename}</h1>
+  <div class="context-box">
+    <h2>Document Context</h2>
+    <p>${documentContext || 'No document context provided'}</p>
+  </div>
   <table>
     <thead>
       <tr>
@@ -124,8 +135,11 @@ function generateHTML(filename: string, mappings: ChunkMapping[]): string {
 
 async function main() {
   const filename = process.argv[2];
+  const documentContext = process.argv[3] || '';
+
   if (!filename) {
-    console.error('Usage: npm run chunk <markdown-file>');
+    console.error('Usage: tsx bin/demo.ts <markdown-file> [document-context]');
+    console.error('Example: tsx bin/demo.ts document.md "This is technical documentation"');
     process.exit(1);
   }
 
@@ -133,15 +147,13 @@ async function main() {
     const input = readFileSync(filename, 'utf8');
     const node = parseMarkdown(input);
 
-    const summarizer = new OpenAISummarizer(
-      'The document has come from the Wiki page about an online crime game; all documents have, so that detail can be assumed: don\'t mention "online crime game".',
-    );
+    const summarizer = new OpenAISummarizer(documentContext);
     const chunker = new TreeChunker(summarizer);
 
     console.log('Generating chunks...');
     const mappings = await collectChunkMappings(chunker, node);
 
-    const html = generateHTML(filename, mappings);
+    const html = generateHTML(filename, mappings, documentContext);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const outputPath = `/tmp/treechunk-demo-${timestamp}.html`;
 
