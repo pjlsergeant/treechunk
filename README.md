@@ -1,6 +1,6 @@
 # TreeChunk
 
-Hierarchical markdown chunking for RAG systems with AI-generated summaries
+Contextual, hierarchical markdown chunking for RAG systems
 
 ## WHAT?
 
@@ -9,13 +9,6 @@ Splits markdown documents into self-contained chunks that contain (hopefully) en
 **There's a static demo of this in action here: [sgnt.ai/treechunk-demo](https://sgnt.ai/treechunk-demo)**.
 
 ## Synopsis
-
-Command line:
-
-```bash
-OPENAI_API_KEY=etc
-tsx bin/demo.ts ./demo/Scamming.md "The document has come from the Wiki for an online crime game"
-```
 
 Programmatic:
 
@@ -30,6 +23,13 @@ await chunker.makeChunks(documentNode, async (chunk, source) => {
   console.log(chunk); // The enriched chunk with context
   console.log(source); // The original markdown source for this section
 });
+```
+
+Build a demo HTML page:
+
+```bash
+OPENAI_API_KEY=etc
+tsx bin/demo.ts ./demo/Scamming.md "The document has come from the Wiki for an online crime game"
 ```
 
 ## API
@@ -50,12 +50,26 @@ await chunker.makeChunks(documentNode, async (chunk, source) => {
 - `parseMarkdown(markdown)` - Parse markdown into DocumentNode tree
 - `renderDocument(node)` - Convert DocumentNode back to markdown
 
+## Prior Art / See Also
+
+This was an independent -- but not novel -- discovery, by which I mean I built it and then went to try and find out what other people call what I've built. It brings together the following ideas:
+
+* Document structure-based chunking, eg: [LangChain's MarkdownHeaderTextSplitter](MarkdownHeaderTextSplitter)
+* Contextual Retrieval (see [this Anthropic article for a similar take](https://www.anthropic.com/news/contextual-retrieval))
+
+# Todo / Next steps
+
+- Expand out the demo
+- Add raw chunk and location data to callback (low priority, as I don't need this)
+
 ## License
 
-MIT.
+**MIT**
 
 If you use this, port this, whatever, I'd love it if you gave this project a shout-out.
 
 ## Author
 
 Peter Sergeant pete@[sgnt.ai](https://sgnt.ai/)
+
+This was built for [Torn](https://www.torn.com/3613560), whose Wiki the "Scamming" article is taken.
