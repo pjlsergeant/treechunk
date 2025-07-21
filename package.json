@@ -1,22 +1,61 @@
 {
   "name": "treechunk",
   "version": "1.0.0",
-  "description": "Tree-based chunking for markdown",
+  "description": "Hierarchical markdown chunking for RAG systems with AI-powered context summarization",
   "type": "module",
   "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./summarizer/openai": {
+      "types": "./dist/summarizer/openaiSummarizer.d.ts",
+      "import": "./dist/summarizer/openaiSummarizer.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vitest watch",
-    "build": "tsc --noEmit",
+    "build": "tsc",
+    "clean": "rm -rf dist",
     "test": "vitest run",
     "lint": "eslint .",
     "format": "prettier --write .",
     "check": "npm run build && npm run test && npm run lint && npm run format",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "npm run clean && npm run check"
   },
-  "keywords": [],
+  "keywords": [
+    "markdown",
+    "chunking",
+    "rag",
+    "ai",
+    "llm",
+    "document-processing",
+    "hierarchical",
+    "context",
+    "summarization",
+    "vector-database"
+  ],
   "author": "Peter Sergeant pete@sgnt.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pjlsergeant/treechunk.git"
+  },
+  "homepage": "https://github.com/pjlsergeant/treechunk#readme",
+  "bugs": {
+    "url": "https://github.com/pjlsergeant/treechunk/issues"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@types/marked": "^5.0.2",
     "@types/node": "^24.0.3",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
@@ -34,7 +73,6 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@types/marked": "^5.0.2",
     "marked": "^16.0.0",
     "openai": "^5.10.1"
   }
