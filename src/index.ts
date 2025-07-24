@@ -1,6 +1,7 @@
-export { TreeChunker } from './chunk.js';
-export { parseMarkdown } from './markdownParser.js';
-export { BaseSummarizer } from './summarizer/base.js';
+export { TreeChunker } from './chunk';
+export { parseMarkdown } from './markdownParser';
+export { BaseSummarizer } from './summarizer/base';
+export { OpenAISummarizer } from './summarizer/openai';
 
-export type { DocumentNode } from './markdownParser.js';
-export type { Summarizer } from './summarizer/base.js';
+export type { DocumentNode } from './markdownParser';
+export type { Summarizer } from './summarizer/base';

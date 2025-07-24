@@ -2,7 +2,6 @@
   "name": "treechunk",
   "version": "1.0.1",
   "description": "Hierarchical markdown chunking for RAG systems with AI-powered context summarization",
-  "type": "module",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

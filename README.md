@@ -13,8 +13,7 @@ Splits markdown documents into self-contained chunks that contain (hopefully) en
 Programmatic:
 
 ```typescript
-import { TreeChunker } from 'treechunk';
-import { OpenAISummarizer } from 'treechunk/summarizer/openai';
+import { TreeChunker, OpenAISummarizer } from 'treechunk';
 
 const summarizer = new OpenAISummarizer('Technical documentation context');
 const chunker = new TreeChunker(summarizer);
